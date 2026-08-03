@@ -1,0 +1,8 @@
+<?php
+require 'config.php'; require_login(); if(!is_admin()) redirect(); $pdo=db();
+if($_SERVER['REQUEST_METHOD']==='POST'){csrf_check();$pw=password_hash($_POST['password'],PASSWORD_DEFAULT);try{$st=$pdo->prepare("INSERT INTO users(name,username,password,role) VALUES(?,?,?,?)");$st->execute([trim($_POST['name']),trim($_POST['username']),$pw,$_POST['role']]);flash('success','تم إنشاء المستخدم.');}catch(PDOException $e){flash('danger','اسم المستخدم موجود مسبقًا.');}redirect('users.php');}
+$rows=$pdo->query("SELECT id,name,username,role,created_at FROM users ORDER BY id DESC")->fetchAll();
+?>
+<?php include 'header.php'; ?><section class="page-head"><div><h1>المستخدمون والصلاحيات</h1><p>إضافة مدراء وكاشير.</p></div></section>
+<div class="panel"><form method="post" class="form-grid"><input type="hidden" name="csrf" value="<?=e(csrf_token())?>"><div><label>الاسم</label><input name="name" required></div><div><label>اسم المستخدم</label><input name="username" required></div><div><label>كلمة المرور</label><input type="password" name="password" required minlength="6"></div><div><label>الصلاحية</label><select name="role"><option value="cashier">كاشير</option><option value="admin">مدير</option></select></div><button class="btn primary">إضافة مستخدم</button></form></div>
+<div class="panel table-wrap"><table><thead><tr><th>الاسم</th><th>المستخدم</th><th>الصلاحية</th><th>التاريخ</th></tr></thead><tbody><?php foreach($rows as $r): ?><tr><td><?=e($r['name'])?></td><td><?=e($r['username'])?></td><td><?=e($r['role'])?></td><td><?=e($r['created_at'])?></td></tr><?php endforeach; ?></tbody></table></div><?php include 'footer.php'; ?>
